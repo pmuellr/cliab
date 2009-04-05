@@ -1,0 +1,401 @@
+﻿<html>
+
+<!-- ====================================================== -->
+<head>
+<title id="head_title">cliab - Couch-Like (DB) In A Browser</title>
+<style type="text/css">
+
+/*-----------------------------------------------------------------*/
+body {
+    font-family:        sans-serif;
+    color:              #333;
+    background:         #EEE;
+    margin-left:        10em;
+    margin-right:        3em;
+}
+
+/*-----------------------------------------------------------------*/
+/*
+a:link, a:visited { 
+    color:              blue;
+}
+*/
+
+/*-----------------------------------------------------------------*/
+code, .code {
+    font-weight:        bold;
+    font-family:        monospace;
+    color:              #055;
+
+}
+
+/*-----------------------------------------------------------------*/
+pre, xmp {
+    border-width:       1;
+    border-style:       solid;
+    overflow:           auto;
+    padding-top:        0.4em;
+    padding-bottom:     0.4em;
+    padding-left:       1.4em;
+    padding-right:      1.4em;
+    margin-left:        1.4em;
+    margin-right:       1.4em;
+    background:         #FFFFDF;
+}
+
+
+/*-----------------------------------------------------------------*/
+h1,h2,h3 {
+    padding-left:         2em;
+    padding-right:      0.3em;
+    padding-top:        0.3em;
+    padding-bottom:     0.3em;
+    border-width:       0;
+    background:         #227;
+    color:              #FFF;
+    text-shadow:        2px 2px 2px #777;
+}
+
+/*-----------------------------------------------------------------*/
+h1 {
+    margin-left:         -3em;
+    font-size:          250%;
+}
+
+/*-----------------------------------------------------------------*/
+h2 {
+    margin-left:         -2em;
+}
+
+/*-----------------------------------------------------------------*/
+h3 {
+    background:          #77A;
+    margin-left:         -1em;
+    padding-left:         1em;
+}
+
+.code-head, .code-parms, .code-returns, .code-throws {
+    font-weight:         bold;
+    margin-left:         -1em;
+    padding-left:         1em;
+}
+
+.code-block {
+    margin-left:          3em;
+}
+
+.code-head {
+    font-family:         monospace;
+    background:          #CCF;
+    padding-top:          5px;
+    padding-bottom:       5px;
+}
+
+.code-parms, .code-returns, .code-throws {
+    padding-top:          0;
+    padding-bottom:       0;
+}
+
+/*-----------------------------------------------------------------*/
+.url {
+    font-family: monospace;
+    font-weight: bold;
+}
+
+/*-----------------------------------------------------------------*/
+.sql-table-name {
+    font-size:        120%;
+    font-weight:      bold;
+    background-color: #CCC;
+}
+
+.sql-table-col-def {
+    font-family: monospace;
+}
+
+/*-----------------------------------------------------------------*/
+.page-break {
+}
+/*
+page-break-before: always;
+*/
+
+/*-----------------------------------------------------------------*/
+.warning {
+    font-weight:      bold;
+    font-size:        150%;
+    background-color: #FAA;
+}
+
+/*-----------------------------------------------------------------*/
+.header-link {
+    font-weight:      normal;
+    font-size:        80%;
+    text-shadow:      none;
+}
+
+/*-----------------------------------------------------------------*/
+@media print {
+    body {
+        background:         #FFF;
+    }
+    
+    pre, xmp {
+        overflow:           hidden;
+        background:         #FFFFEF;
+    }
+    /*
+    */
+}
+
+</style>
+
+<!-- ======================================================================= -->
+<script type="text/javascript">
+function body_onload() {
+    // make head title same as document title
+    var head_title = document.getElementById("head_title").innerHTML
+    document.getElementById("body_title").innerHTML = head_title
+
+    // make spans of class url into links
+    var spans = document.getElementsByTagName("span")
+    for (var i=0; i<spans.length; i++) {
+        var span = spans[i]
+        if (span.className != "url") 
+            continue
+        var url  = span.innerHTML
+        span.innerHTML = "<a href='" + url + "'>" + url + "</a>"
+    }
+    
+    // build TOC
+    toc_ul = document.getElementById("toc_ul")
+    if (null == toc_ul) return
+    
+    var h2s = document.getElementsByTagName("h2")
+    var toc_entries = []
+    for (var i=1; i<h2s.length; i++) {
+        var h2 = h2s[i]
+        var h2_text = h2.innerHTML
+        
+        var entry = "<li><a href='#toc." + i + "'>" + h2_text + "</a></li>"
+        toc_entries.push(entry)
+        
+        var anchor = document.createElement("a")
+        anchor.id = "toc." + i
+        h2.parentNode.insertBefore(anchor,h2)
+    }
+    
+    toc_entries = toc_entries.join("\n")
+    toc_ul.innerHTML = toc_entries
+}
+</script>
+</head>
+
+<!-- ====================================================== -->
+<body onload="body_onload()">
+    
+<h1 id="body_title">title should have been filled in via JavaScript</h1>
+
+<!-- ====================================================== -->
+
+<!--
+<h3>Permalink</h3>
+<ul>
+<li><span class="url">http://rtpgsa.ibm.com/~pmuellr/papers/private/EGL/egl-java-analysis.html</span></li>
+</ul>
+-->
+
+<h3>History</h3>
+<ul>
+<li>2009-04-04 - Patrick Mueller - initial write-up</li>
+</ul>
+
+<!-- ====================================================== -->
+<h2>Table of Contents</h2>
+<ul id="toc_ul">
+</ul>
+<!--
+--/>
+
+<!-- ====================================================== -->
+<h2>Introduction</h2>
+
+<p>After playing a bit with 
+<a href="http://developer.apple.com/documentation/iPhone/Conceptual/SafariJSDatabaseGuide/Introduction/Introduction.html#//apple_ref/doc/uid/TP40007256-CH1-SW1">Safari's implementation of SQL in the browser</a>,
+I came to the conclusion that something like 
+<a href="http://couchdb.apache.org/">CouchDB</a> would be nice 
+have instead of clunky ole SQL.  And that's what this project
+is - a DB using the browser's SQL engine, but with a CouchDB-like
+interface.
+
+<!-- ====================================================== -->
+<h2>Similarities and Differences from CouchDB</h2>
+
+<p><code>cliab</code> is from 100K feet similar to CouchDB in that it 
+stores JSON objects, and then uses JavaScript code to index them.
+While CouchDB refers to the JSON objects as documents, <code>cliab</code>
+just refers to them as objects.  They are, like CouchDB, JSON objects
+stored as flat text.
+
+<p>CouchDB allows it's documents to be named, providing a primary
+key mechanism, but <code>cliab</code> does not.  You will need to
+create a view for the primary index.
+
+<p>CouchDB's external programming interface is REST.  <code>cliab</code>
+is used by JavaScript in a browser, so it's interface is JavaScript
+functions.
+
+<p><code>cliab</code> does not support CouchDB's view collation.
+Keys in views are sorted alphabetically.
+
+<!-- ====================================================== -->
+<h2>Usage</h2>
+
+<!-- ====================================================== -->
+<h2>Installation</h2>
+
+<!-- ====================================================== -->
+<h2>API</h2>
+
+<h3><tt>cliab</tt> object</h3>
+
+<p>The <code>cliab</code> object contains the following 
+functions as properties:
+
+<h4>createDataBase(name [,estimatedSize])</h4>
+
+<p>Creates a new <code>cliab</code> database.  The <code>name</code>
+parameter should be a valid name that can be used by the HTML5
+<code>openDatabase()</code> functions <i>database name</i> parameter.
+The <code>estimatedSize</code> will be used in the call to
+<code>openDatabase()</code>.
+
+<p>Returns a <code><i>Database</i></code> object.
+
+<h4>openDataBase(string [,estimatedSize]))</h4>
+
+<p>Lorem ipsum
+
+<h4>createDataBase(string)</h4>
+
+<p>Lorem ipsum
+
+<!-- ====================================================== -->
+<h2>Design</h2>
+
+<h3>SQL Table Layout</h3>
+
+<table cellpadding=5 cellspacing=0 frame=border border=0>
+
+<!-- ======================= -->
+<tr><td class=sql-table-name colspan=3>Table <tt>cliab-objects</tt>
+
+<tr class=sql-table-col-def>
+<td>oid
+<td> - 
+<td>INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT
+
+
+<tr class=sql-table-col-def>
+<td>object
+<td> - 
+<td>CLOB
+
+
+<tr><td colspan=3>&nbsp;
+
+<!-- ======================= -->
+<tr><td class=sql-table-name colspan=3>Table <tt>cliab-views</tt>
+
+<tr class=sql-table-col-def>
+<td>id
+<td> - 
+<td>INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT
+
+
+<tr class=sql-table-col-def>
+<td>name
+<td> - 
+<td>NVCHAR(255) UNIQUE NOT NULL
+
+
+<tr class=sql-table-col-def>
+<td>map_function
+<td> - 
+<td>CLOB
+
+
+<tr><td colspan=3>&nbsp;
+
+<!-- ======================= -->
+<tr><td class=sql-table-name colspan=3>Table <tt>cliab-view-{d}</tt>
+
+<tr class=sql-table-col-def>
+<td>id
+<td> - 
+<td>INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT
+
+
+<tr class=sql-table-col-def>
+<td>oid
+<td> - 
+<td>INTEGER
+
+
+<tr class=sql-table-col-def>
+<td>key
+<td> - 
+<td>NVCHAR(255)
+
+
+<tr class=sql-table-col-def>
+<td>object
+<td> - 
+<td>CLOB
+
+
+</table>
+
+<!-- ======================= -->
+<p>The <code>cliab-objects</code> table holds all of the objects
+in the database.  
+
+
+<p>The <code>cliab-views</code> table holds all the view definitions.
+
+
+<p>The <code>cliab-view-{d}</code> tables each hold the relevant view dat
+for all the views.  The id of the view in the <code>cliab-views</code>
+table is used as the <code>{d}</code> part of the table name.  The
+view data includes the key and object associated with the view,
+along with the <code>oid</code> indicating which base object the
+view was generated from.
+
+
+<!-- ====================================================== -->
+<h2>References</h2>
+
+<p>
+<a href="http://dev.w3.org/html5/webstorage/">[link]</a>
+-
+<b>Current W3C Web Storage Editor's Draft</b>
+
+
+<p>
+<a href="http://developer.apple.com/documentation/iPhone/Conceptual/SafariJSDatabaseGuide/Introduction/Introduction.html">[link]</a>
+-
+<b>Safari JavaScript Database Programming Guide</b>
+
+<p>
+<a href="http://couchdb.apache.org/">[link]</a>
+-
+<b>CouchDB</b>
+
+<p>
+<a href="http://www.sqlite.org/">[link]</a>
+-
+<b>SQLite</b>
+
+</body>
+
+</html>
