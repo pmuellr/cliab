@@ -45,7 +45,7 @@ pre, xmp {
 
 
 /*-----------------------------------------------------------------*/
-h1,h2,h3 {
+h1,h2,h3,h4 {
     padding-left:         2em;
     padding-right:      0.3em;
     padding-top:        0.3em;
@@ -72,6 +72,13 @@ h3 {
     background:          #77A;
     margin-left:         -1em;
     padding-left:         1em;
+}
+
+/*-----------------------------------------------------------------*/
+h4 {
+    background:          #99C;
+    margin-left:          0em;
+    padding-left:         0.5em;
 }
 
 .code-head, .code-parms, .code-returns, .code-throws {
@@ -257,28 +264,152 @@ Keys in views are sorted alphabetically.
 <!-- ====================================================== -->
 <h2>API</h2>
 
+<!-- ======================================================================= -->
 <h3><tt>cliab</tt> object</h3>
 
 <p>The <code>cliab</code> object contains the following 
 functions as properties:
 
-<h4>createDataBase(name [,estimatedSize])</h4>
+<!-- ================================== -->
+<h4><tt>isAvailable()</tt></h4>
 
-<p>Creates a new <code>cliab</code> database.  The <code>name</code>
+<p>Returns <code>true</code> if <code>cliab</code> can be used on this
+system, false if it can't.</p>
+
+<!-- ================================== -->
+<h4><tt>cliab.openDatabase(name [,size])</tt></h4>
+
+<p>Creates a new <code>cliab</code> or opens an existing database.  
+The <code>name</code>
 parameter should be a valid name that can be used by the HTML5
 <code>openDatabase()</code> functions <i>database name</i> parameter.
-The <code>estimatedSize</code> will be used in the call to
+The <code>size</code> will be used in the call to
 <code>openDatabase()</code>.
 
 <p>Returns a <code><i>Database</i></code> object.
 
-<h4>openDataBase(string [,estimatedSize]))</h4>
+<!-- ======================================================================= -->
+<h3><tt><i>Database</i></tt> interface</h3>
 
-<p>Lorem ipsum
+<!-- ================================== -->
+<h4><tt>createObject(object, callback)</tt></h4>
 
-<h4>createDataBase(string)</h4>
+<p><b>Params</b>
+<ul>
+<li><p><code>object</code> - a JSONifiable object
+<li><p><code>callback</code> - an <code>OperationCallback</code> function
+</ul>
 
-<p>Lorem ipsum
+<p><b>Returns</b>
+<p>Nothing.  
+<p>The <code>OperationResult</code> object passed to the 
+<code>callback</code> function will have the following properties set:
+
+<ul>
+<li><p><code>object</code> - the object passed to the function, with <code>oid</code>
+and <code>rev</code> properties set appropriately.
+</ul>
+
+<!-- ================================== -->
+<h4><tt>readObject(oid, callback)</tt></h4>
+
+<p><b>Params</b>
+<ul>
+<li><p><code>oid</code> - the oid of the object to retrieve
+<li><p><code>callback</code> - an <code>OperationCallback</code> function
+</ul>
+
+<p><b>Returns</b>
+<p>Nothing.  
+<p>The <code>OperationResult</code> object passed to the 
+<code>callback</code> function will have the following properties set:
+
+<ul>
+<li><p><code>object</code> - the object retrieved, or null if not found
+</ul>
+
+<!-- ================================== -->
+<h4><tt>updateObject(oid, object)</tt></h4>
+
+<!-- ================================== -->
+<h4><tt>deleteObject(oid)</tt></h4>
+
+<!-- ================================== -->
+<h4><tt>readViews()</tt></h4>
+
+<!-- ================================== -->
+<h4><tt>createView(name, function)</tt></h4>
+
+<!-- ================================== -->
+<h4><tt>deleteView(name)</tt></h4>
+
+<!-- ======================================================================= -->
+<h3><tt><i>View</i></tt> interface</h3>
+
+<!-- ================================== -->
+<h4><tt>getName()</tt></h4>
+
+<!-- ================================== -->
+<h4><tt>getFunction()</tt></h4>
+
+<!-- ================================== -->
+<h4><tt>getItems(object)</tt></h4>
+
+<!-- ======================================================================= -->
+<h3><tt><i>OperationCallback</i></tt> function</h3>
+
+<!-- ================================== -->
+<h4><tt>function(resultOrError)</tt></h4>
+
+<p>Operations which read or write to the database provide results via
+a callback function.  This function handles both success and error
+results.  Positive results are passed as an 
+<tt><i>OperationResult</i></tt> object, 
+and error results are passed as an 
+<tt><i>Error</i></tt> object.
+
+<p>Both objects respond to <code>isError()</code> message in the way you 
+would expect.
+
+<p>Callbacks do not need to return any data from the callback function.
+
+<!-- ======================================================================= -->
+<h3><tt><i>OperationResult</i></tt> interface</h3>
+
+<p>The contents of the <code>OperationResult</code> objects are described
+in the API descriptions of the functions that use them.
+
+<!-- ================================== -->
+<h4><tt>isError()</tt></h4>
+
+<p>Returns <code>false</code>
+
+<!-- ======================================================================= -->
+<h3><tt><i>Error</i></tt> interface</h3>
+
+<p>Exceptions raised by <code>cliab</code> conform to the standard
+JavaScript standard of supporting <code>name</code> and <code>message</code>
+properties, as well as the <code>toString()</code> method.
+
+<!-- ================================== -->
+<h4><tt>name</tt></h4>
+
+<p>String property with the value <code>"cliab.Error"</code></p>
+
+<!-- ================================== -->
+<h4><tt>message</tt></h4>
+
+<p>String property with a descriptive message about the error condition</p>
+
+<!-- ================================== -->
+<h4><tt>toString()</tt></h4>
+
+<p>Returns <code>name + ": " + message</code>
+
+<!-- ================================== -->
+<h4><tt>isError()</tt></h4>
+
+<p>Returns <code>true</code>
 
 <!-- ====================================================== -->
 <h2>Design</h2>
@@ -295,12 +426,15 @@ The <code>estimatedSize</code> will be used in the call to
 <td> - 
 <td>INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT
 
+<tr class=sql-table-col-def>
+<td>rev
+<td> - 
+<td>INTEGER NOT NULL
 
 <tr class=sql-table-col-def>
 <td>object
 <td> - 
 <td>CLOB
-
 
 <tr><td colspan=3>&nbsp;
 
